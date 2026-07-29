@@ -28,10 +28,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        // ← VERIFICAÇÃO MELHORADA
+        String path = request.getServletPath();
+        if (path.startsWith("/auth/")) {
+            System.out.println("🟡 Ignorando filtro para: " + path);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authorization = request.getHeader("Authorization");
 
-
         if (authorization == null || !authorization.startsWith("Bearer ")) {
+            System.out.println("🟡 Sem token, seguindo sem autenticar");
             filterChain.doFilter(request, response);
             return;
         }
@@ -43,7 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     userDetails,
                     null,
@@ -54,7 +61,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
-        // ← ADICIONADO: Continua para o próximo filtro
         filterChain.doFilter(request, response);
     }
 }

@@ -51,10 +51,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody AuthRequestDTO request) throws Exception {
-        // Autentica o usuário
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSenha())
-        );
+        System.out.println("🔵 LOGIN - Email: " + request.getEmail());
+        System.out.println("🔵 LOGIN - Senha: " + request.getSenha());
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSenha())
+            );
+            System.out.println("🟢 Autenticado com sucesso!");
+        } catch (Exception e) {
+            System.out.println("🔴 Erro: " + e.getMessage());
+            throw e;
+        }
 
         Usuario usuario = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadRequestException("Email não cadastrado"));

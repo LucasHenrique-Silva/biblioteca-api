@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -19,12 +20,27 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UsuarioRepository usuarioRepository;
 
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Usuario usuario =  usuarioRepository.findByEmail(email)
-                .orElseThrow(()-> new UsernameNotFoundException("Usuario não encontrado"));
+        System.out.println("🔵 Buscando usuário: " + email);
 
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getPerfil()));
-        return new User(usuario.getEmail(), usuario.getSenha(), authorities);
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com email: " + email));
+
+        System.out.println("🟢 Usuário encontrado: " + usuario.getEmail());
+        System.out.println("🟢 Perfil: " + usuario.getPerfil().name());
+
+        List<GrantedAuthority> authorities = Collections.singletonList(
+                new SimpleGrantedAuthority("ROLE_" + usuario.getPerfil().name())
+        );
+
+        System.out.println("🟢 Authorities: " + authorities);
+
+        return User.builder()
+                .username(usuario.getEmail())
+                .password(usuario.getSenha())
+                .authorities(authorities)
+                .build();
     }
 }
